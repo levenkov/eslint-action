@@ -2,11 +2,16 @@
 
 set -e
 
-cd "${2:-.}" || echo "source root not found"
+echo GITHUB_WORKSPACE=$GITHUB_WORKSPACE
+echo SOURCE_ROOT=$2
 
-[ -f yarn.lock ] && yarn install
-[ -f package-lock.json ] && npm install
+if ! cd "${2:-.}"; then
+  echo "Source root not found." >&2
+  exit 1
+fi
 
-NODE_PATH=node_modules GITHUB_TOKEN="${GITHUB_TOKEN:-${1:-.}}" SOURCE_ROOT=${2:-.} node /action/lib/run.js
+export NODE_ENV=development
 
-rm -rf node_modules # cleanup to prevent some weird permission errors later on 
+npm i --development
+
+GITHUB_TOKEN="${GITHUB_TOKEN:-${1:-.}}" SOURCE_ROOT=${2:-.} node /app/lib/run.js
